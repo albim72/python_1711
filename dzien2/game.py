@@ -26,15 +26,17 @@ class NarrativeMap:
 
     :Example:
 
-        >>> nm = NarrativeMap(
-        ...     themes=["odkupienie", "tajemnica"],
-        ...     locations=["opuszczony zamek", "mglista dolina"],
-        ...     characters=["Wędrowiec", "Cień"],
-        ... )
-        >>> nm.build_tree(depth=2)
-        >>> summary = nm.get_path_summary(["start", "start_L", "start_LL"])
-        >>> summary["n_steps"]
-        2
+        .. code-block:: python
+
+            nm = NarrativeMap(
+                themes=["odkupienie", "tajemnica"],
+                locations=["opuszczony zamek", "mglista dolina"],
+                characters=["Wędrowiec", "Cień"],
+            )
+            nm.build_tree(depth=2)
+            path = ["start", "start_L", "start_LL"]
+            summary = nm.get_path_summary(path)
+            print(summary["n_steps"])  # 2
     """
 
     def __init__(
@@ -44,6 +46,19 @@ class NarrativeMap:
         characters: List[str],
         seed: Optional[int] = 42,
     ) -> None:
+        """
+        Initialize a new narrative map.
+
+        :param themes: List of narrative themes (e.g. redemption, mystery).
+        :type themes: list[str]
+        :param locations: List of key locations for the narrative.
+        :type locations: list[str]
+        :param characters: List of main characters.
+        :type characters: list[str]
+        :param seed: Random seed for deterministic generation. If ``None``,
+                     a non-deterministic generator is used.
+        :type seed: int | None
+        """
         self.themes: List[str] = list(themes)
         self.locations: List[str] = list(locations)
         self.characters: List[str] = list(characters)
@@ -83,10 +98,11 @@ class NarrativeMap:
 
         :Example:
 
-            >>> nm = NarrativeMap(["odkupienie"], ["zamek"], ["Wędrowiec"])
-            >>> nm.build_tree(depth=2)
-            >>> list(nm.graph.nodes())
-            ['start', 'start_L', 'start_R', 'start_LL', 'start_LR', 'start_RL', 'start_RR']
+            .. code-block:: python
+
+                nm = NarrativeMap(["odkupienie"], ["zamek"], ["Wędrowiec"])
+                nm.build_tree(depth=2)
+                print(sorted(nm.graph.nodes()))
         """
         if depth < 1:
             raise ValueError("Tree depth must be at least 1.")
@@ -95,7 +111,10 @@ class NarrativeMap:
         self._choice_index = 0
 
         root_id = "start"
-        self.graph.add_node(root_id, description=self._generate_event_description(root_id))
+        self.graph.add_node(
+            root_id,
+            description=self._generate_event_description(root_id),
+        )
 
         self._expand_node(root_id, current_depth=0, max_depth=depth)
 
@@ -123,12 +142,13 @@ class NarrativeMap:
 
         :Example:
 
-            >>> nm = NarrativeMap(["odkupienie"], ["zamek"], ["Wędrowiec"])
-            >>> nm.build_tree(depth=2)
-            >>> path = ["start", "start_L", "start_LL"]
-            >>> summary = nm.get_path_summary(path)
-            >>> summary["n_steps"]
-            2
+            .. code-block:: python
+
+                nm = NarrativeMap(["odkupienie"], ["zamek"], ["Wędrowiec"])
+                nm.build_tree(depth=2)
+                path = ["start", "start_L", "start_LL"]
+                summary = nm.get_path_summary(path)
+                print(summary["n_steps"])  # 2
         """
         if not path:
             raise ValueError("Path cannot be empty.")
@@ -186,6 +206,12 @@ class NarrativeMap:
         non-leaf node, assigning contrasting choice labels and random
         risk/reward values.
 
+        Node identifiers follow a readable pattern, e.g.:
+
+        * ``"start"``
+        * ``"start_L"``, ``"start_R"``
+        * ``"start_LL"``, ``"start_LR"``, ``"start_RL"``, ``"start_RR"``, etc.
+
         :param node_id: Identifier of the node to expand.
         :type node_id: str
         :param current_depth: Current depth of this node.
@@ -203,7 +229,12 @@ class NarrativeMap:
         labels = [pair[0], pair[1]]
 
         for direction, choice_label in zip(directions, labels):
-            child_id = f"{node_id}_{direction}"
+            if node_id == "start":
+                child_id = f"{node_id}_{direction}"
+            else:
+                # Append direction without extra underscore for deeper levels
+                child_id = f"{node_id}{direction}"
+
             if child_id not in self.graph:
                 self.graph.add_node(
                     child_id,
@@ -221,7 +252,11 @@ class NarrativeMap:
                 reward=reward_value,
             )
 
-            self._expand_node(child_id, current_depth=current_depth + 1, max_depth=max_depth)
+            self._expand_node(
+                child_id,
+                current_depth=current_depth + 1,
+                max_depth=max_depth,
+            )
 
     def _generate_event_description(self, node_id: str) -> str:
         """
@@ -250,7 +285,7 @@ class NarrativeMap:
             else "Nieznajomy"
         )
 
-        depth_level = max(0, node_id.count("_"))
+        depth_level = max(0, node_id.count("L") + node_id.count("R"))
         phase_word = {
             0: "początek",
             1: "pierwszy zwrot",
@@ -273,9 +308,14 @@ if __name__ == "__main__":
     locations = ["opuszczony zamek", "mglista dolina"]
     characters = ["Wędrowiec", "Cień"]
 
-    narrative_map = NarrativeMap(themes=themes, locations=locations, characters=characters)
+    narrative_map = NarrativeMap(
+        themes=themes,
+        locations=locations,
+        characters=characters,
+    )
     narrative_map.build_tree(depth=3)
 
+    # Left-most path: start -> start_L -> start_LL -> start_LLL
     sample_path = ["start", "start_L", "start_LL", "start_LLL"]
 
     summary = narrative_map.get_path_summary(sample_path)
