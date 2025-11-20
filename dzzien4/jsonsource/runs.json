@@ -1,0 +1,19 @@
+{
+  "runs": [
+                {
+                    "date":"2025-11-02",
+                    "distance_km": 10,
+                    "duration_min": 45.7
+                },
+                {
+                    "date":"2025-11-10",
+                    "distance_km": 15,
+                    "duration_min": 88
+                },
+                {
+                    "date":"2025-11-17",
+                    "distance_km": 41,
+                    "duration_min": 243
+                }
+  ]
+}
