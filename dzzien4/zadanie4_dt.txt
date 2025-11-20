@@ -1,0 +1,35 @@
+ZADANIE: Klasa danych „Book”
+
+
+Instrukcja
+
+Utwórz klasę danych o nazwie Book, korzystając z dekoratora @dataclass.
+Klasa powinna zawierać następujące pola:
+
+          tytuł książki (tekst),
+          
+          autor (tekst),
+          
+          cena (liczba zmiennoprzecinkowa),
+          
+          rok wydania (liczba całkowita).
+
+Dodaj do klasy metodę, która zwraca krótką informację o książce w formacie:
+„tytuł (rok)”
+
+W funkcji głównej programu:
+
+    utwórz trzy obiekty klasy Book,
+
+    umieść je we wspólnej liście,
+
+    oblicz średnią cenę wszystkich książek,
+
+    wypisz informacje o każdej książce,
+
+    wypisz średnią cenę w czytelnym formacie (z dwoma miejscami po przecinku).
+
+
+Oczekiwany rezultat (przykład)
+
+Wyświetlenie krótkich informacji o trzech książkach oraz średniej ich ceny.
